@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=127.0.0.1
+      - DB_PORT=5432
+      - DB_USER=tu_usuario
+      - DB_PASSWORD=tu_password
+      - DB_NAME=tu_base_de_datos
+    depends_on:
+      - cloudsql-proxy
+
+  cloudsql-proxy:
+    image: gcr.io/cloudsql-docker/gce-proxy:1.33.1
+    command: /cloud_sql_proxy -instances=YOUR-PROJECT-ID:REGION:INSTANCE-ID=tcp:0.0.0.0:5432 -credential_file=/secrets/service-account.json
+    volumes:
+      - ./service-account.json:/secrets/service-account.json:ro
+    ports:
+      - "5432:5432"
