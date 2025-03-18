@@ -21,8 +21,7 @@ services:
       - financial-network
 
   postgres:
-    image: postgres:15-alpine
-    platform: linux/arm64
+    image: postgres:15
     ports:
       - "5432:5432"
     environment:
@@ -43,7 +42,6 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    platform: linux/arm64
     ports:
       - "5050:80"
     environment:
