@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Start Docker & Debug Go",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/app/main.go",
+            "preLaunchTask": "docker-compose-up",
+            "postDebugTask": "docker-compose-down",
+            "env": {
+                "DOCKER_HOST": "unix://${env:HOME}/.colima/default/docker.sock"
+            }
+        }
+    ]
+} 

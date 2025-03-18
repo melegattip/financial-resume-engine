@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "docker-compose-clean",
+            "type": "shell",
+            "command": "export DOCKER_HOST=\"unix://${HOME}/.colima/default/docker.sock\" && docker compose down",
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
+        {
+            "label": "docker-compose-up",
+            "type": "shell",
+            "command": "export DOCKER_HOST=\"unix://${HOME}/.colima/default/docker.sock\" && docker compose up --build",
+            "isBackground": true,
+            "dependsOn": ["docker-compose-clean"],
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*$",
+                    "endsPattern": "Database connected successfully"
+                }
+            }
+        },
+        {
+            "label": "docker-compose-down",
+            "type": "shell",
+            "command": "export DOCKER_HOST=\"unix://${HOME}/.colima/default/docker.sock\" && docker compose down",
+            "presentation": {
+                "reveal": "silent"
+            }
+        }
+    ]
+} 
