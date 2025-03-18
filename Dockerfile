@@ -1,14 +1,24 @@
 # Etapa 1: Compilación
-FROM golang:1.20-alpine AS builder
+FROM --platform=linux/arm64 golang:1.23-rc-alpine
 WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/app/main.go
 
-# Etapa 2: Imagen final
-FROM alpine:latest
-WORKDIR /app
-COPY --from=builder /app/app .
+# Instalar dependencias del sistema
+RUN apk add --no-cache gcc musl-dev
+
+# Copiar archivos de dependencias
+COPY go.mod go.sum ./
+
+# Descargar dependencias
+RUN go mod download
+
+# Copiar el código fuente
+COPY . .
+
+# Compilar la aplicación
+RUN go build -o main ./cmd/app
+
+# Exponer el puerto
 EXPOSE 8080
-CMD ["./app"]
+
+# Ejecutar la aplicación
+CMD ["./main"]
