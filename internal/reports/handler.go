@@ -1,10 +1,11 @@
-package transactions
+package reports
 
 import (
-    "net/http"
-    "github.com/gin-gonic/gin"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func CreateTransaction(c *gin.Context) {
-    c.JSON(http.StatusCreated, gin.H{"message": "Transaction created"})
+	c.JSON(http.StatusCreated, gin.H{"message": "Transaction created"})
 }
