@@ -1,5 +1,5 @@
 # Etapa 1: Compilación
-FROM golang:1.21-bullseye
+FROM golang:1.23-bullseye
 WORKDIR /app
 
 # Instalar dependencias del sistema
