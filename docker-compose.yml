@@ -41,7 +41,8 @@ services:
       - financial-network
 
   pgadmin:
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:latest
+    platform: linux/amd64
     ports:
       - "5050:80"
     environment:
