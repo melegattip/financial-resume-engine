@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/melegattip/financial-resume-engine/internal/config"
-	"github.com/melegattip/financial-resume-engine/internal/transactions"
+	"github.com/melegattip/financial-resume-engine/internal/usecases/transactions"
 )
 
 func main() {
