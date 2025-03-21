@@ -5,7 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/melegattip/financial-resume-engine/internal/models"
+	"github.com/melegattip/financial-resume-engine/internal/usecases/categories"
+	"github.com/melegattip/financial-resume-engine/internal/usecases/transactions"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -48,11 +49,11 @@ func InitDB() *gorm.DB {
 
 	// Auto-migrar los modelos
 	err = db.AutoMigrate(
-		&models.TransactionModel{},
-		&models.CategoryModel{},
+		&transactions.TransactionModel{},
+		&categories.CategoryModel{},
 	)
 	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+		log.Fatal("Error al migrar la base de datos:", err)
 	}
 
 	fmt.Println("Database connected successfully")
