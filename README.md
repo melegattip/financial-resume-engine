@@ -5,7 +5,7 @@ Motor de resumen financiero que permite gestionar transacciones, categorías y g
 ## Requisitos Previos
 
 - Go 1.23 o superior
-- Docker (a través de Colima para macOS) o Docker Desktop
+- PostgreSQL 15 o superior
 - Sistema operativo compatible:
   - Windows 10/11 Pro, Enterprise o Education (64-bit)
   - Linux (Ubuntu 20.04 LTS o superior)
@@ -30,97 +30,53 @@ cp .env.example .env
 # Editar .env con tus credenciales seguras
 ```
 
-3. Configurar el entorno según tu sistema operativo:
+## Ejecución
+
+1. Asegúrate de tener PostgreSQL instalado y corriendo:
 
 ### Windows
-1. Instalar Docker Desktop desde [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
-2. Iniciar Docker Desktop
-3. Esperar a que el ícono de Docker en la bandeja del sistema indique que está listo
+- Descarga e instala PostgreSQL desde [https://www.postgresql.org/download/windows/](https://www.postgresql.org/download/windows/)
+- Inicia el servicio de PostgreSQL desde Servicios de Windows
 
 ### Linux (Ubuntu)
 ```bash
-# Actualizar repositorios
-sudo apt-get update
+# Instalar PostgreSQL
+sudo apt update
+sudo apt install postgresql postgresql-contrib
 
+# Iniciar el servicio
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+
+### macOS
+```bash
+# Instalar PostgreSQL usando Homebrew
+brew install postgresql@15
+
+# Iniciar el servicio
+brew services start postgresql@15
+```
+
+2. Crear la base de datos y el usuario:
+```sql
+-- Conectarse a PostgreSQL
+psql -U postgres
+
+-- Crear la base de datos y el usuario (ajusta según tu .env)
+CREATE DATABASE financial_resume;
+CREATE USER financial_user WITH PASSWORD 'tu_contraseña';
+GRANT ALL PRIVILEGES ON DATABASE financial_resume TO financial_user;
+```
+
+3. Ejecutar la API:
+```bash
 # Instalar dependencias
-sudo apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release
+go mod download
 
-# Agregar la clave GPG oficial de Docker
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
-# Configurar el repositorio estable
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# Instalar Docker Engine
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-
-# Agregar tu usuario al grupo docker
-sudo usermod -aG docker $USER
+# Ejecutar la aplicación
+go run cmd/app/main.go
 ```
-
-### macOS (Recomendado: Colima)
-1. Instalar Colima:
-```bash
-# Instalar Colima usando Homebrew
-brew install colima
-
-# Iniciar Colima con configuración optimizada
-colima start --cpu 4 --memory 8 --disk 100
-
-# Configurar el socket de Docker (agregar a ~/.zshrc o ~/.bash_profile)
-export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
-```
-
-2. Verificar la instalación:
-```bash
-# Verificar que Colima está corriendo
-colima status
-
-# Verificar que Docker está funcionando
-docker ps
-```
-
-3. Configuración adicional (opcional):
-```bash
-# Configurar recursos adicionales si es necesario
-colima stop
-colima start --cpu 6 --memory 12 --disk 200
-
-# Configurar variables de entorno persistentes
-echo 'export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-## Ejecución
-
-1. Iniciar los contenedores:
-```bash
-# Windows (PowerShell)
-docker compose up --build
-
-# Linux/macOS
-docker compose up --build
-```
-
-2. Acceder a pgAdmin:
-- URL: http://localhost:5050
-- Email: Configurado en PGADMIN_DEFAULT_EMAIL
-- Password: Configurado en PGADMIN_DEFAULT_PASSWORD
-
-3. Configurar el servidor en pgAdmin:
-- Host: Configurado en DB_HOST
-- Port: Configurado en DB_PORT
-- Database: Configurado en DB_NAME
-- Username: Configurado en DB_USER
-- Password: Configurado en DB_PASSWORD
 
 ## Documentación API (Swagger)
 
@@ -252,7 +208,7 @@ El proyecto incluye configuración para debugging en VS Code:
 
 1. Abrir el proyecto en VS Code
 2. Presionar F5 para iniciar el debugging
-3. Seleccionar "Start Docker & Debug Go"
+3. Seleccionar "Debug Go"
 
 ### Estructura del Proyecto
 
@@ -267,24 +223,8 @@ El proyecto incluye configuración para debugging en VS Code:
 │   ├── models/
 │   ├── reports/
 │   └── transactions/
-├── Dockerfile
-├── docker-compose.yml
 ├── .env.example
 └── go.mod
-```
-
-## Detener la Aplicación
-
-Para detener los contenedores:
-```bash
-# Windows (PowerShell)
-docker compose down
-
-# Linux/macOS
-docker compose down
-
-# Para macOS con Colima (cuando termines de trabajar)
-colima stop
 ```
 
 ## Notas Importantes
@@ -293,37 +233,45 @@ colima stop
 - Las transacciones están asociadas a un usuario específico
 - Los reportes se generan por usuario
 - Nunca compartas o comitees el archivo `.env` con tus credenciales reales
-- En Windows, asegúrate de que Docker Desktop esté ejecutándose antes de usar los comandos
-- En Linux, puede ser necesario reiniciar la sesión después de agregar el usuario al grupo docker
 
 ## Solución de Problemas
 
-### Problemas Comunes con Colima
+### Base de Datos
 
-1. Si Colima no inicia:
+1. Si no puedes conectarte a la base de datos:
 ```bash
-# Detener todas las instancias
-colima stop
+# Verificar que PostgreSQL está corriendo
+# Windows
+sc query postgresql
 
-# Eliminar la instancia por defecto
-colima delete
+# Linux
+sudo systemctl status postgresql
 
-# Reiniciar con configuración limpia
-colima start
+# macOS
+brew services list | grep postgresql
 ```
 
-2. Si Docker no puede conectarse:
+2. Si necesitas reiniciar la base de datos:
 ```bash
-# Verificar que el socket existe
-ls -l ~/.colima/default/docker.sock
+# Windows
+net stop postgresql
+net start postgresql
 
-# Reiniciar Colima
-colima stop && colima start
+# Linux
+sudo systemctl restart postgresql
+
+# macOS
+brew services restart postgresql@15
 ```
 
-3. Problemas de rendimiento:
+3. Si necesitas verificar los logs de PostgreSQL:
 ```bash
-# Aumentar recursos asignados
-colima stop
-colima start --cpu 6 --memory 12 --disk 200
+# Windows
+# Ver en el Visor de eventos de Windows
+
+# Linux
+sudo tail -f /var/log/postgresql/postgresql-15-main.log
+
+# macOS
+tail -f /usr/local/var/log/postgresql@15.log
 ```
