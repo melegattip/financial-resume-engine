@@ -5,7 +5,7 @@ Motor de resumen financiero que permite gestionar transacciones, categorías y g
 ## Requisitos Previos
 
 - Go 1.23 o superior
-- Docker y Docker Compose
+- Docker (a través de Colima para macOS) o Docker Desktop
 - Sistema operativo compatible:
   - Windows 10/11 Pro, Enterprise o Education (64-bit)
   - Linux (Ubuntu 20.04 LTS o superior)
@@ -30,7 +30,7 @@ cp .env.example .env
 # Editar .env con tus credenciales seguras
 ```
 
-3. Configurar Docker según tu sistema operativo:
+3. Configurar el entorno según tu sistema operativo:
 
 ### Windows
 1. Instalar Docker Desktop desde [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
@@ -66,21 +66,37 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 sudo usermod -aG docker $USER
 ```
 
-### macOS
-1. Opción 1 - Docker Desktop:
-   - Instalar Docker Desktop desde [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
-   - Iniciar Docker Desktop
-
-2. Opción 2 - Colima (alternativa más ligera):
+### macOS (Recomendado: Colima)
+1. Instalar Colima:
 ```bash
-# Instalar Colima
+# Instalar Colima usando Homebrew
 brew install colima
 
-# Iniciar Colima
-colima start
+# Iniciar Colima con configuración optimizada
+colima start --cpu 4 --memory 8 --disk 100
 
-# Configurar el socket de Docker
+# Configurar el socket de Docker (agregar a ~/.zshrc o ~/.bash_profile)
 export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+```
+
+2. Verificar la instalación:
+```bash
+# Verificar que Colima está corriendo
+colima status
+
+# Verificar que Docker está funcionando
+docker ps
+```
+
+3. Configuración adicional (opcional):
+```bash
+# Configurar recursos adicionales si es necesario
+colima stop
+colima start --cpu 6 --memory 12 --disk 200
+
+# Configurar variables de entorno persistentes
+echo 'export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ## Ejecución
@@ -250,6 +266,9 @@ docker compose down
 
 # Linux/macOS
 docker compose down
+
+# Para macOS con Colima (cuando termines de trabajar)
+colima stop
 ```
 
 ## Notas Importantes
@@ -260,3 +279,35 @@ docker compose down
 - Nunca compartas o comitees el archivo `.env` con tus credenciales reales
 - En Windows, asegúrate de que Docker Desktop esté ejecutándose antes de usar los comandos
 - En Linux, puede ser necesario reiniciar la sesión después de agregar el usuario al grupo docker
+
+## Solución de Problemas
+
+### Problemas Comunes con Colima
+
+1. Si Colima no inicia:
+```bash
+# Detener todas las instancias
+colima stop
+
+# Eliminar la instancia por defecto
+colima delete
+
+# Reiniciar con configuración limpia
+colima start
+```
+
+2. Si Docker no puede conectarse:
+```bash
+# Verificar que el socket existe
+ls -l ~/.colima/default/docker.sock
+
+# Reiniciar Colima
+colima stop && colima start
+```
+
+3. Problemas de rendimiento:
+```bash
+# Aumentar recursos asignados
+colima stop
+colima start --cpu 6 --memory 12 --disk 200
+```

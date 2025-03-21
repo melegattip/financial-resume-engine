@@ -1,15 +1,29 @@
 {
     "version": "0.2.0",
     "configurations": [
-    
         {
-            "name": "Start Docker & Debug Go",
+            "name": "Debug Go API",
             "type": "go",
             "request": "launch",
-            "mode": "auto",
+            "mode": "debug",
             "program": "${workspaceFolder}/cmd/app/main.go",
-            "preLaunchTask": "docker-compose-up",
-            "postDebugTask": "docker-compose-down"
+            "env": {
+                "DB_HOST": "localhost",
+                "DB_USER": "postgres",
+                "DB_PASSWORD": "postgres",
+                "DB_NAME": "financial_db",
+                "DB_PORT": "5432",
+                "PORT": "8080",
+                "ENV": "development",
+                "LOG_LEVEL": "debug"
+            },
+            "args": [],
+            "showLog": true,
+            "buildFlags": "-v",
+            "output": "${workspaceFolder}/debug",
+            "cwd": "${workspaceFolder}",
+            "internalConsoleOptions": "neverOpen",
+            "console": "integratedTerminal"
         }
     ]
 } 
