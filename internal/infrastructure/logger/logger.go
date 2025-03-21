@@ -2,11 +2,37 @@ package logger
 
 import (
 	"context"
-	"log"
+	"fmt"
 
-	"github.com/melegattip/financial-resume-engine/internal/core/logs"
+	log "github.com/sirupsen/logrus"
 )
 
-func Error(ctx context.Context, err error, message string, tags logs.Tags) {
-	log.Printf("ERROR: %s - %v - %+v", message, err, tags)
+type Tags map[string]interface{}
+
+func Init() {
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetLevel(log.InfoLevel)
+}
+
+func Info(ctx context.Context, msg string, tags map[string]interface{}) {
+	log.SetLevel(log.InfoLevel)
+	log.WithContext(ctx).WithFields(log.Fields(tags)).Info(msg)
+}
+
+func Error(ctx context.Context, err error, msg string, tags map[string]interface{}) {
+	if err != nil {
+		msg = fmt.Sprintf("%s : %v", msg, err)
+	}
+	log.SetLevel(log.ErrorLevel)
+	log.WithContext(ctx).WithFields(log.Fields(tags)).Error(msg)
+}
+
+func Warn(ctx context.Context, msg string, tags map[string]interface{}) {
+	log.SetLevel(log.WarnLevel)
+	log.WithContext(ctx).WithFields(log.Fields(tags)).Warn(msg)
+}
+
+func Debug(ctx context.Context, msg string, tags map[string]interface{}) {
+	log.SetLevel(log.DebugLevel)
+	log.WithContext(ctx).WithFields(log.Fields(tags)).Debug(msg)
 }
