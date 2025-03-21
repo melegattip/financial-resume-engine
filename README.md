@@ -122,6 +122,22 @@ docker compose up --build
 - Username: Configurado en DB_USER
 - Password: Configurado en DB_PASSWORD
 
+## Documentación API (Swagger)
+
+La documentación completa de la API está disponible a través de Swagger UI:
+
+- URL: http://localhost:8080/swagger/index.html
+
+En la interfaz de Swagger podrás:
+1. Ver todas las operaciones disponibles organizadas por categorías
+2. Probar los endpoints directamente desde la interfaz
+3. Ver los modelos de datos y parámetros requeridos
+4. Autenticarte usando el botón "Authorize" para probar endpoints protegidos
+
+Parámetros comunes para todas las operaciones:
+- Header `x-caller-id`: Identificador del usuario que realiza la llamada
+- Header `Authorization`: Token Bearer para autenticación (cuando sea requerido)
+
 ## Endpoints Disponibles
 
 ### Transacciones
