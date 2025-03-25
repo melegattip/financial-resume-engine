@@ -7,7 +7,7 @@ import (
 	envconstants "github.com/melegattip/financial-resume-engine/internal/config/environment/constants"
 	"github.com/melegattip/financial-resume-engine/internal/core/logs"
 	"github.com/melegattip/financial-resume-engine/internal/infrastructure/logger"
-	configconstants "github.com/melegattip/financial-resume-engine/internal/infrastructure/repositories/configuration/constants"
+	"github.com/melegattip/financial-resume-engine/internal/infrastructure/repository/configuration"
 	"github.com/melegattip/financial-resume-engine/pkg/config"
 	"github.com/melegattip/financial-resume-engine/pkg/config/configtest"
 	"github.com/melegattip/financial-resume-engine/pkg/config/types"
@@ -28,7 +28,7 @@ func LoadClient() Client {
 		return configurationClient
 	}
 
-	configurationClient = configtest.Load(configconstants.DefaultConfig)
+	configurationClient = configtest.Load(configuration.DefaultConfigPath)
 
 	return configurationClient
 }
