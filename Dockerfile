@@ -1,9 +1,9 @@
 # Etapa 1: Compilación
-FROM golang:1.23-bullseye AS builder
+FROM golang:1.23-alpine AS builder
 WORKDIR /app
 
 # Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y gcc && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache gcc musl-dev
 
 # Copiar archivos de dependencias
 COPY go.mod go.sum ./
@@ -14,11 +14,12 @@ RUN go mod download
 # Copiar el código fuente
 COPY . .
 
-# Compilar la aplicación con optimizaciones
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/app
+# Compilar la aplicación
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
 
 # Etapa 2: Imagen final
 FROM alpine:latest
+RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 # Copiar el binario compilado

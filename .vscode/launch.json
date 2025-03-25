@@ -2,28 +2,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Go API",
+            "name": "Launch API",
             "type": "go",
             "request": "launch",
-            "mode": "debug",
-            "program": "${workspaceFolder}/cmd/app/main.go",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/api/main.go",
             "env": {
                 "DB_HOST": "localhost",
                 "DB_USER": "postgres",
                 "DB_PASSWORD": "postgres",
-                "DB_NAME": "financial_db",
-                "DB_PORT": "5432",
-                "PORT": "8080",
-                "ENV": "development",
-                "LOG_LEVEL": "debug"
+                "DB_NAME": "financial_resume",
+                "DB_PORT": "5432"
             },
-            "args": [],
-            "showLog": true,
-            "buildFlags": "-v",
-            "output": "${workspaceFolder}/debug",
-            "cwd": "${workspaceFolder}",
-            "internalConsoleOptions": "neverOpen",
-            "console": "integratedTerminal"
+            "preLaunchTask": "Start PostgreSQL",
+            "args": []
         }
     ]
 } 

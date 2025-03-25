@@ -48,6 +48,25 @@
                 "echo": true
             },
             "problemMatcher": []
+        },
+        {
+            "label": "Start PostgreSQL",
+            "type": "shell",
+            "command": "docker-compose up -d postgres",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": ".",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": "database system is ready to accept connections"
+                }
+            }
         }
     ]
 } 

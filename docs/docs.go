@@ -24,25 +24,23 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/categories": {
+        "/api/v1/categories": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
+                "description": "Retorna una lista de todas las categorías disponibles",
+                "consumes": [
+                    "application/json"
                 ],
-                "description": "Obtiene una lista de todas las categorías",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "categories"
                 ],
-                "summary": "Listar todas las categorías",
+                "summary": "Obtener todas las categorías",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID del llamador",
+                        "description": "ID del usuario",
                         "name": "x-caller-id",
                         "in": "header",
                         "required": true
@@ -54,31 +52,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/categories.Category"
+                                "$ref": "#/definitions/domain.Category"
                             }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
                         }
                     }
                 }
             },
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Crea una nueva categoría para transacciones",
+                "description": "Crea una nueva categoría con los datos proporcionados",
                 "consumes": [
                     "application/json"
                 ],
@@ -92,7 +79,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID del llamador",
+                        "description": "ID del usuario",
                         "name": "x-caller-id",
                         "in": "header",
                         "required": true
@@ -111,38 +98,30 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/categories.Category"
+                            "$ref": "#/definitions/domain.Category"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.BadRequest"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
                         }
                     }
                 }
             }
         },
-        "/categories/{id}": {
+        "/api/v1/categories/{id}": {
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
+                "description": "Elimina una categoría existente por su ID",
+                "consumes": [
+                    "application/json"
                 ],
-                "description": "Elimina una categoría por su ID",
                 "produces": [
                     "application/json"
                 ],
@@ -153,7 +132,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID del llamador",
+                        "description": "ID del usuario",
                         "name": "x-caller-id",
                         "in": "header",
                         "required": true
@@ -170,33 +149,28 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.BadRequest"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.ResourceNotFound"
                         }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Actualiza los datos de una categoría existente",
+                "description": "Actualiza una categoría existente con los datos proporcionados",
                 "consumes": [
                     "application/json"
                 ],
@@ -210,7 +184,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID del llamador",
+                        "description": "ID del usuario",
                         "name": "x-caller-id",
                         "in": "header",
                         "required": true
@@ -223,7 +197,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Datos actualizados de la categoría",
+                        "description": "Datos de actualización",
                         "name": "category",
                         "in": "body",
                         "required": true,
@@ -236,157 +210,33 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/categories.Category"
+                            "$ref": "#/definitions/domain.Category"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.BadRequest"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.ResourceNotFound"
                         }
                     }
                 }
             }
         },
-        "/reports/financial": {
+        "/api/v1/expenses": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Genera un reporte financiero para un período específico",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "reports"
-                ],
-                "summary": "Generar reporte financiero",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID del llamador",
-                        "name": "x-caller-id",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Fecha de inicio (YYYY-MM-DD)",
-                        "name": "start_date",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Fecha de fin (YYYY-MM-DD)",
-                        "name": "end_date",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/reports.FinancialReport"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/transactions": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Obtiene una lista de todas las transacciones",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "transactions"
-                ],
-                "summary": "Listar todas las transacciones",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID del llamador",
-                        "name": "x-caller-id",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/transactions.TransactionModel"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Crea una nueva transacción financiera",
+                "description": "Obtiene una lista de todos los gastos del usuario",
                 "consumes": [
                     "application/json"
                 ],
@@ -394,24 +244,60 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "transactions"
+                    "expenses"
                 ],
-                "summary": "Crear una nueva transacción",
+                "summary": "Listar gastos",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID del llamador",
+                        "description": "ID del usuario",
+                        "name": "x-caller-id",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/expenses.ListExpensesResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Crea un nuevo gasto para el usuario",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "expenses"
+                ],
+                "summary": "Crear un nuevo gasto",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del usuario",
                         "name": "x-caller-id",
                         "in": "header",
                         "required": true
                     },
                     {
-                        "description": "Datos de la transacción",
-                        "name": "transaction",
+                        "description": "Datos del gasto",
+                        "name": "expense",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/create.CreateTransactionRequest"
+                            "$ref": "#/definitions/expenses.CreateExpenseRequest"
                         }
                     }
                 ],
@@ -419,56 +305,48 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/create.CreateTransactionResponse"
+                            "$ref": "#/definitions/expenses.CreateExpenseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.BadRequest"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
                         }
                     }
                 }
             }
         },
-        "/transactions/{id}": {
+        "/api/v1/expenses/{id}": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
+                "description": "Obtiene un gasto por su ID",
+                "consumes": [
+                    "application/json"
                 ],
-                "description": "Obtiene los detalles de una transacción por su ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "transactions"
+                    "expenses"
                 ],
-                "summary": "Obtener una transacción específica",
+                "summary": "Obtener un gasto específico",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID del llamador",
+                        "description": "ID del usuario",
                         "name": "x-caller-id",
                         "in": "header",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID de la transacción",
+                        "description": "ID del gasto",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -478,54 +356,52 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/transactions.TransactionModel"
+                            "$ref": "#/definitions/expenses.GetExpenseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.BadRequest"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.ResourceNotFound"
                         }
                     }
                 }
             },
             "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
+                "description": "Elimina un gasto existente",
+                "consumes": [
+                    "application/json"
                 ],
-                "description": "Elimina una transacción por su ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "transactions"
+                    "expenses"
                 ],
-                "summary": "Eliminar una transacción",
+                "summary": "Eliminar un gasto",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID del llamador",
+                        "description": "ID del usuario",
                         "name": "x-caller-id",
                         "in": "header",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID de la transacción",
+                        "description": "ID del gasto",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -535,33 +411,28 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.BadRequest"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.ResourceNotFound"
                         }
                     }
                 }
             },
             "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Actualiza los datos de una transacción existente",
+                "description": "Actualiza los datos de un gasto existente",
                 "consumes": [
                     "application/json"
                 ],
@@ -569,31 +440,31 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "transactions"
+                    "expenses"
                 ],
-                "summary": "Actualizar una transacción",
+                "summary": "Actualizar un gasto",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID del llamador",
+                        "description": "ID del usuario",
                         "name": "x-caller-id",
                         "in": "header",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID de la transacción",
+                        "description": "ID del gasto",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Datos actualizados de la transacción",
-                        "name": "transaction",
+                        "description": "Datos actualizados del gasto",
+                        "name": "expense",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/create.CreateTransactionRequest"
+                            "$ref": "#/definitions/expenses.UpdateExpenseRequest"
                         }
                     }
                 ],
@@ -601,31 +472,287 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/transactions.TransactionModel"
+                            "$ref": "#/definitions/expenses.UpdateExpenseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.BadRequest"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.ResourceNotFound"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/incomes": {
+            "get": {
+                "description": "Obtiene una lista de todos los ingresos del usuario",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incomes"
+                ],
+                "summary": "Listar ingresos",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del usuario",
+                        "name": "x-caller-id",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/incomes.ListIncomesResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Crea un nuevo ingreso para el usuario",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incomes"
+                ],
+                "summary": "Crear un nuevo ingreso",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del usuario",
+                        "name": "x-caller-id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos del ingreso",
+                        "name": "income",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/incomes.CreateIncomeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/incomes.CreateIncomeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.BadRequest"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/incomes/{id}": {
+            "get": {
+                "description": "Obtiene un ingreso por su ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incomes"
+                ],
+                "summary": "Obtener un ingreso específico",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del usuario",
+                        "name": "x-caller-id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID del ingreso",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/incomes.GetIncomeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.BadRequest"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ResourceNotFound"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Elimina un ingreso existente",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incomes"
+                ],
+                "summary": "Eliminar un ingreso",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del usuario",
+                        "name": "x-caller-id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID del ingreso",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.BadRequest"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ResourceNotFound"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Actualiza los datos de un ingreso existente",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incomes"
+                ],
+                "summary": "Actualizar un ingreso",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID del usuario",
+                        "name": "x-caller-id",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID del ingreso",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos actualizados del ingreso",
+                        "name": "income",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/incomes.UpdateIncomeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/incomes.UpdateIncomeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.BadRequest"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.UnauthorizedRequest"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.ResourceNotFound"
                         }
                     }
                 }
@@ -633,20 +760,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "categories.Category": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
         "categories.CreateCategoryRequest": {
             "type": "object",
             "required": [
@@ -672,7 +785,36 @@ const docTemplate = `{
                 }
             }
         },
-        "create.CreateTransactionRequest": {
+        "domain.Category": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "errors.BadRequest": {
+            "type": "object"
+        },
+        "errors.ResourceNotFound": {
+            "type": "object"
+        },
+        "errors.UnauthorizedRequest": {
+            "type": "object"
+        },
+        "expenses.CreateExpenseRequest": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -684,13 +826,42 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "expiry_date": {
+                "due_date": {
                     "type": "string"
                 },
-                "payed": {
+                "paid": {
                     "type": "boolean"
                 },
-                "type_id": {
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "expenses.CreateExpenseResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "paid": {
+                    "type": "boolean"
+                },
+                "updated_at": {
                     "type": "string"
                 },
                 "user_id": {
@@ -698,81 +869,7 @@ const docTemplate = `{
                 }
             }
         },
-        "create.CreateTransactionResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "transaction_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer",
-                    "example": 400
-                },
-                "error": {
-                    "type": "string",
-                    "example": "Error message"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Bad Request"
-                }
-            }
-        },
-        "reports.FinancialReport": {
-            "type": "object",
-            "properties": {
-                "end_date": {
-                    "type": "string"
-                },
-                "net_balance": {
-                    "type": "number"
-                },
-                "start_date": {
-                    "type": "string"
-                },
-                "total_expenses": {
-                    "type": "number"
-                },
-                "total_income": {
-                    "type": "number"
-                },
-                "transactions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/reports.Transaction"
-                    }
-                }
-            }
-        },
-        "reports.Transaction": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "userID": {
-                    "type": "string"
-                }
-            }
-        },
-        "transactions.TransactionModel": {
+        "expenses.GetExpenseResponse": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -787,16 +884,211 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "expiry_date": {
+                "due_date": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "payed": {
+                "paid": {
                     "type": "boolean"
                 },
-                "type_id": {
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "expenses.ListExpensesResponse": {
+            "type": "object",
+            "properties": {
+                "expenses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/expenses.GetExpenseResponse"
+                    }
+                }
+            }
+        },
+        "expenses.UpdateExpenseRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "paid": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "expenses.UpdateExpenseResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "paid": {
+                    "type": "boolean"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "incomes.CreateIncomeRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "incomes.CreateIncomeResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "incomes.GetIncomeResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "incomes.ListIncomesResponse": {
+            "type": "object",
+            "properties": {
+                "incomes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/incomes.GetIncomeResponse"
+                    }
+                }
+            }
+        },
+        "incomes.UpdateIncomeRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "incomes.UpdateIncomeResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "source": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -807,14 +1099,6 @@ const docTemplate = `{
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "description": "Type \"Bearer\" followed by a space and JWT token.",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        }
     }
 }`
 
@@ -823,9 +1107,9 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
-	Schemes:          []string{},
+	Schemes:          []string{"http"},
 	Title:            "Financial Resume Engine API",
-	Description:      "API para gestionar transacciones financieras y generar reportes",
+	Description:      "API para gestionar ingresos y gastos personales",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

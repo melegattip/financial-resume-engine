@@ -1,14 +1,5 @@
 basePath: /api/v1
 definitions:
-  categories.Category:
-    properties:
-      description:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-    type: object
   categories.CreateCategoryRequest:
     properties:
       description:
@@ -25,7 +16,26 @@ definitions:
       name:
         type: string
     type: object
-  create.CreateTransactionRequest:
+  domain.Category:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  errors.BadRequest:
+    type: object
+  errors.ResourceNotFound:
+    type: object
+  errors.UnauthorizedRequest:
+    type: object
+  expenses.CreateExpenseRequest:
     properties:
       amount:
         type: number
@@ -33,65 +43,35 @@ definitions:
         type: string
       description:
         type: string
-      expiry_date:
+      due_date:
         type: string
-      payed:
+      paid:
         type: boolean
-      type_id:
+      user_id:
+        type: string
+    type: object
+  expenses.CreateExpenseResponse:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      due_date:
+        type: string
+      id:
+        type: string
+      paid:
+        type: boolean
+      updated_at:
         type: string
       user_id:
         type: string
     type: object
-  create.CreateTransactionResponse:
-    properties:
-      created_at:
-        type: string
-      transaction_id:
-        type: string
-    type: object
-  http.ErrorResponse:
-    properties:
-      code:
-        example: 400
-        type: integer
-      error:
-        example: Error message
-        type: string
-      message:
-        example: Bad Request
-        type: string
-    type: object
-  reports.FinancialReport:
-    properties:
-      end_date:
-        type: string
-      net_balance:
-        type: number
-      start_date:
-        type: string
-      total_expenses:
-        type: number
-      total_income:
-        type: number
-      transactions:
-        items:
-          $ref: '#/definitions/reports.Transaction'
-        type: array
-    type: object
-  reports.Transaction:
-    properties:
-      amount:
-        type: number
-      createdAt:
-        type: string
-      description:
-        type: string
-      id:
-        type: integer
-      userID:
-        type: string
-    type: object
-  transactions.TransactionModel:
+  expenses.GetExpenseResponse:
     properties:
       amount:
         type: number
@@ -101,13 +81,140 @@ definitions:
         type: string
       description:
         type: string
-      expiry_date:
+      due_date:
         type: string
       id:
         type: string
-      payed:
+      paid:
         type: boolean
-      type_id:
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  expenses.ListExpensesResponse:
+    properties:
+      expenses:
+        items:
+          $ref: '#/definitions/expenses.GetExpenseResponse'
+        type: array
+    type: object
+  expenses.UpdateExpenseRequest:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      description:
+        type: string
+      due_date:
+        type: string
+      paid:
+        type: boolean
+    type: object
+  expenses.UpdateExpenseResponse:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      due_date:
+        type: string
+      id:
+        type: string
+      paid:
+        type: boolean
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  incomes.CreateIncomeRequest:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      description:
+        type: string
+      source:
+        type: string
+      user_id:
+        type: string
+    type: object
+  incomes.CreateIncomeResponse:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      source:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  incomes.GetIncomeResponse:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      source:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  incomes.ListIncomesResponse:
+    properties:
+      incomes:
+        items:
+          $ref: '#/definitions/incomes.GetIncomeResponse'
+        type: array
+    type: object
+  incomes.UpdateIncomeRequest:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      description:
+        type: string
+      source:
+        type: string
+    type: object
+  incomes.UpdateIncomeResponse:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      source:
         type: string
       updated_at:
         type: string
@@ -120,7 +227,7 @@ info:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: API para gestionar transacciones financieras y generar reportes
+  description: API para gestionar ingresos y gastos personales
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -128,11 +235,13 @@ info:
   title: Financial Resume Engine API
   version: "1.0"
 paths:
-  /categories:
+  /api/v1/categories:
     get:
-      description: Obtiene una lista de todas las categorías
+      consumes:
+      - application/json
+      description: Retorna una lista de todas las categorías disponibles
       parameters:
-      - description: ID del llamador
+      - description: ID del usuario
         in: header
         name: x-caller-id
         required: true
@@ -144,27 +253,21 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/categories.Category'
+              $ref: '#/definitions/domain.Category'
             type: array
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Listar todas las categorías
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+      summary: Obtener todas las categorías
       tags:
       - categories
     post:
       consumes:
       - application/json
-      description: Crea una nueva categoría para transacciones
+      description: Crea una nueva categoría con los datos proporcionados
       parameters:
-      - description: ID del llamador
+      - description: ID del usuario
         in: header
         name: x-caller-id
         required: true
@@ -181,29 +284,25 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/categories.Category'
+            $ref: '#/definitions/domain.Category'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/errors.BadRequest'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
+            $ref: '#/definitions/errors.UnauthorizedRequest'
       summary: Crear una nueva categoría
       tags:
       - categories
-  /categories/{id}:
+  /api/v1/categories/{id}:
     delete:
-      description: Elimina una categoría por su ID
+      consumes:
+      - application/json
+      description: Elimina una categoría existente por su ID
       parameters:
-      - description: ID del llamador
+      - description: ID del usuario
         in: header
         name: x-caller-id
         required: true
@@ -218,29 +317,27 @@ paths:
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.BadRequest'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/errors.UnauthorizedRequest'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
+            $ref: '#/definitions/errors.ResourceNotFound'
       summary: Eliminar una categoría
       tags:
       - categories
     patch:
       consumes:
       - application/json
-      description: Actualiza los datos de una categoría existente
+      description: Actualiza una categoría existente con los datos proporcionados
       parameters:
-      - description: ID del llamador
+      - description: ID del usuario
         in: header
         name: x-caller-id
         required: true
@@ -250,7 +347,7 @@ paths:
         name: id
         required: true
         type: string
-      - description: Datos actualizados de la categoría
+      - description: Datos de actualización
         in: body
         name: category
         required: true
@@ -262,76 +359,29 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/categories.Category'
+            $ref: '#/definitions/domain.Category'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/errors.BadRequest'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/errors.UnauthorizedRequest'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
+            $ref: '#/definitions/errors.ResourceNotFound'
       summary: Actualizar una categoría
       tags:
       - categories
-  /reports/financial:
+  /api/v1/expenses:
     get:
-      description: Genera un reporte financiero para un período específico
-      parameters:
-      - description: ID del llamador
-        in: header
-        name: x-caller-id
-        required: true
-        type: string
-      - description: Fecha de inicio (YYYY-MM-DD)
-        in: query
-        name: start_date
-        required: true
-        type: string
-      - description: Fecha de fin (YYYY-MM-DD)
-        in: query
-        name: end_date
-        required: true
-        type: string
-      produces:
+      consumes:
       - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/reports.FinancialReport'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Generar reporte financiero
-      tags:
-      - reports
-  /transactions:
-    get:
-      description: Obtiene una lista de todas las transacciones
+      description: Obtiene una lista de todos los gastos del usuario
       parameters:
-      - description: ID del llamador
+      - description: ID del usuario
         in: header
         name: x-caller-id
         required: true
@@ -342,72 +392,60 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/transactions.TransactionModel'
-            type: array
+            $ref: '#/definitions/expenses.ListExpensesResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Listar todas las transacciones
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+      summary: Listar gastos
       tags:
-      - transactions
+      - expenses
     post:
       consumes:
       - application/json
-      description: Crea una nueva transacción financiera
+      description: Crea un nuevo gasto para el usuario
       parameters:
-      - description: ID del llamador
+      - description: ID del usuario
         in: header
         name: x-caller-id
         required: true
         type: string
-      - description: Datos de la transacción
+      - description: Datos del gasto
         in: body
-        name: transaction
+        name: expense
         required: true
         schema:
-          $ref: '#/definitions/create.CreateTransactionRequest'
+          $ref: '#/definitions/expenses.CreateExpenseRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/create.CreateTransactionResponse'
+            $ref: '#/definitions/expenses.CreateExpenseResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/errors.BadRequest'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Crear una nueva transacción
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+      summary: Crear un nuevo gasto
       tags:
-      - transactions
-  /transactions/{id}:
+      - expenses
+  /api/v1/expenses/{id}:
     delete:
-      description: Elimina una transacción por su ID
+      consumes:
+      - application/json
+      description: Elimina un gasto existente
       parameters:
-      - description: ID del llamador
+      - description: ID del usuario
         in: header
         name: x-caller-id
         required: true
         type: string
-      - description: ID de la transacción
+      - description: ID del gasto
         in: path
         name: id
         required: true
@@ -417,113 +455,276 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Eliminar una transacción
-      tags:
-      - transactions
-    get:
-      description: Obtiene los detalles de una transacción por su ID
-      parameters:
-      - description: ID del llamador
-        in: header
-        name: x-caller-id
-        required: true
-        type: string
-      - description: ID de la transacción
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/transactions.TransactionModel'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Obtener una transacción específica
-      tags:
-      - transactions
-    patch:
-      consumes:
-      - application/json
-      description: Actualiza los datos de una transacción existente
-      parameters:
-      - description: ID del llamador
-        in: header
-        name: x-caller-id
-        required: true
-        type: string
-      - description: ID de la transacción
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Datos actualizados de la transacción
-        in: body
-        name: transaction
-        required: true
-        schema:
-          $ref: '#/definitions/create.CreateTransactionRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/transactions.TransactionModel'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/errors.BadRequest'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
+            $ref: '#/definitions/errors.UnauthorizedRequest'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Actualizar una transacción
+            $ref: '#/definitions/errors.ResourceNotFound'
+      summary: Eliminar un gasto
       tags:
-      - transactions
-securityDefinitions:
-  BearerAuth:
-    description: Type "Bearer" followed by a space and JWT token.
-    in: header
-    name: Authorization
-    type: apiKey
+      - expenses
+    get:
+      consumes:
+      - application/json
+      description: Obtiene un gasto por su ID
+      parameters:
+      - description: ID del usuario
+        in: header
+        name: x-caller-id
+        required: true
+        type: string
+      - description: ID del gasto
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/expenses.GetExpenseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.BadRequest'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ResourceNotFound'
+      summary: Obtener un gasto específico
+      tags:
+      - expenses
+    patch:
+      consumes:
+      - application/json
+      description: Actualiza los datos de un gasto existente
+      parameters:
+      - description: ID del usuario
+        in: header
+        name: x-caller-id
+        required: true
+        type: string
+      - description: ID del gasto
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados del gasto
+        in: body
+        name: expense
+        required: true
+        schema:
+          $ref: '#/definitions/expenses.UpdateExpenseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/expenses.UpdateExpenseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.BadRequest'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ResourceNotFound'
+      summary: Actualizar un gasto
+      tags:
+      - expenses
+  /api/v1/incomes:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene una lista de todos los ingresos del usuario
+      parameters:
+      - description: ID del usuario
+        in: header
+        name: x-caller-id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/incomes.ListIncomesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+      summary: Listar ingresos
+      tags:
+      - incomes
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo ingreso para el usuario
+      parameters:
+      - description: ID del usuario
+        in: header
+        name: x-caller-id
+        required: true
+        type: string
+      - description: Datos del ingreso
+        in: body
+        name: income
+        required: true
+        schema:
+          $ref: '#/definitions/incomes.CreateIncomeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/incomes.CreateIncomeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.BadRequest'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+      summary: Crear un nuevo ingreso
+      tags:
+      - incomes
+  /api/v1/incomes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Elimina un ingreso existente
+      parameters:
+      - description: ID del usuario
+        in: header
+        name: x-caller-id
+        required: true
+        type: string
+      - description: ID del ingreso
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.BadRequest'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ResourceNotFound'
+      summary: Eliminar un ingreso
+      tags:
+      - incomes
+    get:
+      consumes:
+      - application/json
+      description: Obtiene un ingreso por su ID
+      parameters:
+      - description: ID del usuario
+        in: header
+        name: x-caller-id
+        required: true
+        type: string
+      - description: ID del ingreso
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/incomes.GetIncomeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.BadRequest'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ResourceNotFound'
+      summary: Obtener un ingreso específico
+      tags:
+      - incomes
+    patch:
+      consumes:
+      - application/json
+      description: Actualiza los datos de un ingreso existente
+      parameters:
+      - description: ID del usuario
+        in: header
+        name: x-caller-id
+        required: true
+        type: string
+      - description: ID del ingreso
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Datos actualizados del ingreso
+        in: body
+        name: income
+        required: true
+        schema:
+          $ref: '#/definitions/incomes.UpdateIncomeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/incomes.UpdateIncomeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.BadRequest'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.UnauthorizedRequest'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ResourceNotFound'
+      summary: Actualizar un ingreso
+      tags:
+      - incomes
+schemes:
+- http
 swagger: "2.0"
