@@ -47,8 +47,15 @@ jobs:
     - name: Run govet
       run: go vet ./...
 
-    - name: Build
-      run: go build -v ./...
+    - name: Build API
+      run: |
+        echo "Building API..."
+        go build -v -o bin/api ./cmd/api
+        if [ ! -f "bin/api" ]; then
+          echo "Error: API binary was not created"
+          exit 1
+        fi
+        echo "API built successfully"
 
     - name: Run tests with coverage
       run: |
