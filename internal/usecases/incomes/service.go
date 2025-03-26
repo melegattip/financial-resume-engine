@@ -38,6 +38,7 @@ func NewIncomeService(repository IncomeRepository) IncomeService {
 
 func (s *IncomeServiceImpl) CreateIncome(ctx context.Context, request *CreateIncomeRequest) (*CreateIncomeResponse, error) {
 	income := domain.NewIncomeBuilder().
+		SetID(domain.NewID()).
 		SetUserID(request.UserID).
 		SetAmount(request.Amount).
 		SetDescription(request.Description).

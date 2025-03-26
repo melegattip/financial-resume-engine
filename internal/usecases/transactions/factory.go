@@ -59,7 +59,7 @@ func (f *TransactionFactoryImpl) CreateTransaction(ctx context.Context, userID s
 			Amount:      amount,
 			Description: description,
 			Category:    category,
-			DueDate:     dueDate.Format("2006-01-02"),
+			DueDate:     dueDate.Format("2006-01-02T15:04:05Z07:00"),
 		}
 		response, err := f.expenseService.CreateExpense(ctx, request)
 		if err != nil {
@@ -74,6 +74,7 @@ func (f *TransactionFactoryImpl) CreateTransaction(ctx context.Context, userID s
 		Amount:      amount,
 		Description: description,
 		Category:    category,
+		Source:      "employer",
 	}
 	response, err := f.incomeService.CreateIncome(ctx, request)
 	if err != nil {
@@ -127,6 +128,7 @@ func (f *TransactionFactoryImpl) UpdateTransaction(ctx context.Context, userID s
 			Amount:      amount,
 			Description: description,
 			Category:    category,
+			Source:      "employer",
 		}
 		response, err := f.incomeService.UpdateIncome(ctx, userID, transactionID, request)
 		if err != nil {
@@ -138,9 +140,10 @@ func (f *TransactionFactoryImpl) UpdateTransaction(ctx context.Context, userID s
 			Amount:      amount,
 			Description: description,
 			Category:    category,
+			Paid:        true,
 		}
 		if dueDate != nil {
-			request.DueDate = dueDate.Format("2006-01-02")
+			request.DueDate = dueDate.Format("2006-01-02T15:04:05Z07:00")
 		}
 		response, err := f.expenseService.UpdateExpense(ctx, userID, transactionID, request)
 		if err != nil {
