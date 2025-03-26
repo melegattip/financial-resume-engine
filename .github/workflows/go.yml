@@ -5,9 +5,9 @@ name: Go
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 jobs:
 
@@ -21,8 +21,42 @@ jobs:
       with:
         go-version: '1.20'
 
+    - name: Install golint
+      run: go install golang.org/x/lint/golint@latest
+
+    - name: Install nancy
+      run: go install github.com/sonatype-nexus-community/nancy@latest
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Check for vulnerabilities
+      run: go list -json -m all | nancy sleuth
+
+    - name: Check code formatting
+      run: |
+        if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then
+          echo "Code is not formatted. Please run 'gofmt -w .'"
+          gofmt -l .
+          exit 1
+        fi
+
+    - name: Run golint
+      run: golint ./...
+
+    - name: Run govet
+      run: go vet ./...
+
     - name: Build
       run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
+    - name: Run tests with coverage
+      run: |
+        go test -v -coverprofile=coverage.out ./...
+        go tool cover -func=coverage.out
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage.out
