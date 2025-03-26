@@ -39,6 +39,7 @@ func (s *ExpenseServiceImpl) CreateExpense(ctx context.Context, request *CreateE
 	}
 
 	expense := domain.NewExpenseBuilder().
+		SetID(domain.NewID()).
 		SetUserID(request.UserID).
 		SetAmount(request.Amount).
 		SetDescription(request.Description).
@@ -176,6 +177,7 @@ func (s *ExpenseServiceImpl) UpdateExpense(ctx context.Context, userID string, e
 	if request.Category != "" {
 		expense.Category = request.Category
 	}
+	expense.Paid = request.Paid
 	if request.DueDate != "" {
 		dueDate, err := time.Parse("2006-01-02T15:04:05Z07:00", request.DueDate)
 		if err != nil {
