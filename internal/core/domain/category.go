@@ -1,6 +1,13 @@
 package domain
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var (
+	ErrEmptyCategoryName = errors.New("category name cannot be empty")
+)
 
 // Category representa una categoría de transacción
 type Category struct {
@@ -51,5 +58,15 @@ func (b *CategoryBuilder) SetUpdatedAt(updatedAt time.Time) *CategoryBuilder {
 }
 
 func (b *CategoryBuilder) Build() *Category {
+	if b.category.Name == "" {
+		return nil
+	}
 	return b.category
+}
+
+func (c *Category) Validate() error {
+	if c.Name == "" {
+		return ErrEmptyCategoryName
+	}
+	return nil
 }

@@ -30,6 +30,32 @@ cp .env.example .env
 # Editar .env con tus credenciales seguras
 ```
 
+## Ejecución con Docker Compose
+
+El proyecto incluye una configuración de Docker Compose que facilita la ejecución tanto de la API como de la base de datos PostgreSQL:
+
+```bash
+# Iniciar todos los servicios
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+
+# Detener todos los servicios
+docker-compose down
+
+# Detener y eliminar volúmenes
+docker-compose down -v
+```
+
+La configuración incluye:
+- PostgreSQL 15 en el puerto 5432
+- Base de datos: financial_resume
+- Usuario: postgres
+- Contraseña: postgres
+- Volumen persistente para los datos
+- Healthcheck para asegurar que la base de datos esté lista antes de iniciar la API
+
 ## Ejecución
 
 1. Asegúrate de tener PostgreSQL instalado y corriendo:
