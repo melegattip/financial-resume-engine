@@ -1,3 +1,4 @@
+// Package configuration provides functionality for loading and managing configuration clients
 package configuration
 
 import (
@@ -13,8 +14,11 @@ import (
 	"github.com/melegattip/financial-resume-engine/pkg/config/types"
 )
 
+// Client represents a configuration client that can load and access configuration values
 type Client = types.Client
 
+// LoadClient creates and returns a configuration client based on the current environment
+// It returns a production client when in production environment, otherwise returns a test client
 func LoadClient() Client {
 	var configurationClient Client
 
