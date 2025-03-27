@@ -1,8 +1,12 @@
 package categories
 
 import (
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/melegattip/financial-resume-engine/internal/core/domain"
+	"github.com/melegattip/financial-resume-engine/internal/core/errors"
+	"github.com/melegattip/financial-resume-engine/internal/core/logs"
 	baseRepo "github.com/melegattip/financial-resume-engine/internal/core/repository"
 )
 
@@ -15,14 +19,33 @@ func NewCreateCategory(repo baseRepo.CategoryRepository) *CreateCategory {
 }
 
 func (s *CreateCategory) Execute(category *domain.Category) (*domain.Category, error) {
-	// Generar ID único para la categoría
+	// Validate category is not nil
+	if category == nil {
+		return nil, errors.NewBadRequest("Category cannot be nil")
+	}
+
+	// Validate empty name
+	if strings.TrimSpace(category.Name) == "" {
+		return nil, errors.NewBadRequest("Category name cannot be empty")
+	}
+
+	// Validate if category already exists
+	existingCategory, err := s.CategoryRepository.Get(category.Name)
+	if err != nil && !errors.IsResourceNotFound(err) {
+		return nil, err
+	}
+	if existingCategory != nil {
+		return nil, errors.NewResourceAlreadyExists(logs.ErrorCreatingCategory.GetMessage())
+	}
+
+	// Generate unique ID for category
 	categoryID := "cat_" + uuid.New().String()[:8]
 
-	// Establecer fecha de creación
+	// Set creation date
 	category.ID = categoryID
 
-	// Crear la categoría en el repositorio
-	err := s.CategoryRepository.Create(category)
+	// Create category in repository
+	err = s.CategoryRepository.Create(category)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +73,13 @@ func NewGetCategory(repo baseRepo.CategoryRepository) *GetCategory {
 	return &GetCategory{CategoryRepository: repo}
 }
 
-func (s *GetCategory) Execute(id string) (*domain.Category, error) {
-	return s.CategoryRepository.Get(id)
+func (s *GetCategory) Execute(name string) (*domain.Category, error) {
+	// Validate empty name
+	if strings.TrimSpace(name) == "" {
+		return nil, errors.NewBadRequest("Category name cannot be empty")
+	}
+
+	return s.CategoryRepository.Get(name)
 }
 
 type UpdateCategory struct {
@@ -63,6 +91,21 @@ func NewUpdateCategory(repo baseRepo.CategoryRepository) *UpdateCategory {
 }
 
 func (s *UpdateCategory) Execute(category *domain.Category) error {
+	// Validate category is not nil
+	if category == nil {
+		return errors.NewBadRequest("Category cannot be nil")
+	}
+
+	// Validate empty name
+	if strings.TrimSpace(category.Name) == "" {
+		return errors.NewBadRequest("Category name cannot be empty")
+	}
+
+	// Validate invalid ID
+	if !strings.HasPrefix(category.ID, "cat_") {
+		return errors.NewBadRequest("Invalid category ID")
+	}
+
 	return s.CategoryRepository.Update(category)
 }
 
@@ -75,5 +118,10 @@ func NewDeleteCategory(repo baseRepo.CategoryRepository) *DeleteCategory {
 }
 
 func (s *DeleteCategory) Execute(id string) error {
+	// Validate invalid ID
+	if !strings.HasPrefix(id, "cat_") {
+		return errors.NewBadRequest("Invalid category ID")
+	}
+
 	return s.CategoryRepository.Delete(id)
 }
