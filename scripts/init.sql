@@ -1,4 +1,16 @@
+-- Eliminar tablas existentes si existen
+DROP TABLE IF EXISTS categories CASCADE;
+DROP TABLE IF EXISTS incomes CASCADE;
+DROP TABLE IF EXISTS expenses CASCADE;
+
 -- Crear las tablas y los índices
+
+-- Crear la tabla de categorías
+CREATE TABLE IF NOT EXISTS categories (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+);
 
 -- Crear la tabla de ingresos
 CREATE TABLE IF NOT EXISTS incomes (

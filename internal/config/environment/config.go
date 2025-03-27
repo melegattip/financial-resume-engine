@@ -1,3 +1,4 @@
+// Package environment provides configuration for different deployment environments
 package environment
 
 import (
@@ -8,6 +9,7 @@ import (
 	environment "github.com/melegattip/financial-resume-engine/internal/config/environment/constants"
 )
 
+// SetUp initializes the environment configuration based on the current deployment scope
 func SetUp() {
 	log.Println("Global Environment Setup")
 
@@ -30,12 +32,13 @@ func SetUp() {
 	}
 }
 
+// setupProdEnvironment configures the environment variables for production deployment
 func setupProdEnvironment() {
-	apiUrl, internalUrl := getBaseUrls(os.Getenv("GO_ENVIRONMENT"))
+	apiURL, internalURL := getBaseUrls(os.Getenv("GO_ENVIRONMENT"))
 
 	// URLs
-	os.Setenv("API_URL", apiUrl)
-	os.Setenv("INTERNAL_URL", internalUrl)
+	os.Setenv("API_URL", apiURL)
+	os.Setenv("INTERNAL_URL", internalURL)
 	os.Setenv("DATABASE_URL", "postgresql://user:password@prod-db.niloft.com:5432/financial_db")
 	os.Setenv("REDIS_URL", "redis://prod-redis.niloft.com:6379")
 
@@ -45,12 +48,13 @@ func setupProdEnvironment() {
 	os.Setenv("MAX_CONNECTIONS", "100")
 }
 
+// setupBetaEnvironment configures the environment variables for beta deployment
 func setupBetaEnvironment() {
-	apiUrl, internalUrl := getBaseUrls(os.Getenv("GO_ENVIRONMENT"))
+	apiURL, internalURL := getBaseUrls(os.Getenv("GO_ENVIRONMENT"))
 
 	// URLs
-	os.Setenv("API_URL", apiUrl)
-	os.Setenv("INTERNAL_URL", internalUrl)
+	os.Setenv("API_URL", apiURL)
+	os.Setenv("INTERNAL_URL", internalURL)
 	os.Setenv("DATABASE_URL", "postgresql://user:password@beta-db.niloft.com:5432/financial_db")
 	os.Setenv("REDIS_URL", "redis://beta-redis.niloft.com:6379")
 
@@ -60,12 +64,13 @@ func setupBetaEnvironment() {
 	os.Setenv("MAX_CONNECTIONS", "50")
 }
 
+// setupDevelopmentEnvironment configures the environment variables for local development
 func setupDevelopmentEnvironment() {
-	apiUrl, internalUrl := getBaseUrls(os.Getenv("GO_ENVIRONMENT"))
+	apiURL, internalURL := getBaseUrls(os.Getenv("GO_ENVIRONMENT"))
 
 	// URLs
-	os.Setenv("API_URL", apiUrl)
-	os.Setenv("INTERNAL_URL", internalUrl)
+	os.Setenv("API_URL", apiURL)
+	os.Setenv("INTERNAL_URL", internalURL)
 	os.Setenv("DATABASE_URL", "postgresql://user:password@localhost:5432/financial_db")
 	os.Setenv("REDIS_URL", "redis://localhost:6379")
 
@@ -75,6 +80,8 @@ func setupDevelopmentEnvironment() {
 	os.Setenv("MAX_CONNECTIONS", "20")
 }
 
+// getBaseUrls returns the API and internal URLs based on the environment
+// Returns two strings: the API URL and the internal URL
 func getBaseUrls(goEnvironment string) (string, string) {
 	if environment.Production == goEnvironment {
 		return "http://internal.niloft.com", "http://internal.niloft.com"

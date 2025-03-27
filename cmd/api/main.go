@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	_ "github.com/melegattip/financial-resume-engine/docs"
 	"github.com/melegattip/financial-resume-engine/internal/handlers"
 	"github.com/melegattip/financial-resume-engine/internal/infrastructure/repository"
+	"github.com/melegattip/financial-resume-engine/internal/infrastructure/router"
 	"github.com/melegattip/financial-resume-engine/internal/usecases/expenses"
 	"github.com/melegattip/financial-resume-engine/internal/usecases/incomes"
 	swaggerFiles "github.com/swaggo/files"
@@ -61,44 +61,18 @@ func main() {
 	// Inicializar handlers
 	incomeHandler := handlers.NewIncomeHandler(incomeService)
 	expenseHandler := handlers.NewExpenseHandler(expenseService)
+	categoryHandler := handlers.NewCategoryHandler(db)
 
 	// Configurar el router
-	router := gin.Default()
-	router.Use(gin.Recovery())
+	r := router.SetupRouter(incomeHandler, expenseHandler, categoryHandler)
 
 	// Configurar Swagger
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// Configurar rutas
-	api := router.Group("/api/v1")
-	{
-		// Rutas de ingresos
-		incomes := api.Group("/incomes")
-		{
-			incomes.POST("", incomeHandler.CreateIncome)
-			incomes.GET("", incomeHandler.ListIncomes)
-			incomes.GET("/:id", incomeHandler.GetIncome)
-			incomes.PATCH("/:id", incomeHandler.UpdateIncome)
-			incomes.DELETE("/:id", incomeHandler.DeleteIncome)
-		}
-
-		// Rutas de gastos
-		expenses := api.Group("/expenses")
-		{
-			expenses.POST("", expenseHandler.CreateExpense)
-			expenses.GET("", expenseHandler.ListExpenses)
-			expenses.GET("/unpaid", expenseHandler.ListUnpaidExpenses)
-			expenses.GET("/by-due-date", expenseHandler.ListExpensesByDueDate)
-			expenses.GET("/:id", expenseHandler.GetExpense)
-			expenses.PATCH("/:id", expenseHandler.UpdateExpense)
-			expenses.PATCH("/:id/paid", expenseHandler.MarkAsPaid)
-			expenses.DELETE("/:id", expenseHandler.DeleteExpense)
-		}
-	}
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Iniciar el servidor
-	if err := router.Run(":8080"); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	port := getEnv("PORT", "8080")
+	if err := r.Run(":" + port); err != nil {
+		log.Fatal(err)
 	}
 }
 

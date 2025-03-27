@@ -2,7 +2,6 @@ package domain
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +35,6 @@ func TestNewCategory(t *testing.T) {
 			category := NewCategoryBuilder().
 				SetID(tt.id).
 				SetName(tt.title).
-				SetDescription(tt.description).
 				Build()
 
 			if tt.wantErr {
@@ -46,7 +44,6 @@ func TestNewCategory(t *testing.T) {
 			assert.NotNil(t, category)
 			assert.Equal(t, tt.id, category.ID)
 			assert.Equal(t, tt.title, category.Name)
-			assert.Equal(t, tt.description, category.Description)
 		})
 	}
 }
@@ -60,18 +57,16 @@ func TestCategory_Validate(t *testing.T) {
 		{
 			name: "Valid category",
 			category: &Category{
-				ID:          "123",
-				Name:        "Groceries",
-				Description: "Food and household items",
+				ID:   "123",
+				Name: "Groceries",
 			},
 			wantErr: false,
 		},
 		{
 			name: "Invalid - empty title",
 			category: &Category{
-				ID:          "123",
-				Name:        "",
-				Description: "Food and household items",
+				ID:   "123",
+				Name: "",
 			},
 			wantErr: true,
 		},
@@ -116,31 +111,20 @@ func TestCategoryBuilder(t *testing.T) {
 			category := NewCategoryBuilder().
 				SetID(tt.id).
 				SetName(tt.categoryName).
-				SetDescription(tt.description).
 				Build()
 
 			assert.Equal(t, tt.id, category.ID)
 			assert.Equal(t, tt.categoryName, category.Name)
-			assert.Equal(t, tt.description, category.Description)
-			assert.False(t, category.CreatedAt.IsZero())
-			assert.False(t, category.UpdatedAt.IsZero())
 		})
 	}
 }
 
 func TestCategoryBuilder_CustomDates(t *testing.T) {
-	now := time.Now()
 	category := NewCategoryBuilder().
 		SetID("789").
 		SetName("Entertainment").
-		SetDescription("Movies and shows").
-		SetCreatedAt(now).
-		SetUpdatedAt(now).
 		Build()
 
 	assert.Equal(t, "789", category.ID)
 	assert.Equal(t, "Entertainment", category.Name)
-	assert.Equal(t, "Movies and shows", category.Description)
-	assert.Equal(t, now, category.CreatedAt)
-	assert.Equal(t, now, category.UpdatedAt)
 }

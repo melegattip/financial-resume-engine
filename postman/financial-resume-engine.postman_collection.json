@@ -1,0 +1,511 @@
+{
+	"info": {
+		"_postman_id": "financial-resume-engine",
+		"name": "Financial Resume Engine",
+		"description": "API para gestión de finanzas personales",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Create Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Comida\",\n    \"description\": \"Gastos de alimentación\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "categories"]
+						},
+						"description": "Crea una nueva categoría"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Category - Empty Name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"\",\n    \"description\": \"Gastos de alimentación\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "categories"]
+						},
+						"description": "Intenta crear una categoría con nombre vacío"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Category - Missing Auth",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Comida\",\n    \"description\": \"Gastos de alimentación\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "categories"]
+						},
+						"description": "Intenta crear una categoría sin autenticación"
+					},
+					"response": []
+				},
+				{
+					"name": "List Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "categories"]
+						},
+						"description": "Obtiene todas las categorías"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Alimentación\",\n    \"description\": \"Nueva descripción\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories/{{category_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "categories", "{{category_id}}"]
+						},
+						"description": "Actualiza una categoría existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category - Not Found",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Alimentación\",\n    \"description\": \"Nueva descripción\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories/invalid-id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "categories", "invalid-id"]
+						},
+						"description": "Intenta actualizar una categoría que no existe"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/categories/{{category_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "categories", "{{category_id}}"]
+						},
+						"description": "Elimina una categoría"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Incomes",
+			"item": [
+				{
+					"name": "Create Income",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 1000,\n    \"category\": \"Salario\",\n    \"description\": \"Salario mensual\",\n    \"source\": \"employer\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/incomes",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "incomes"]
+						},
+						"description": "Crea un nuevo ingreso"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Income - Invalid Amount",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": -1000,\n    \"category\": \"Salario\",\n    \"description\": \"Salario mensual\",\n    \"source\": \"employer\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/incomes",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "incomes"]
+						},
+						"description": "Intenta crear un ingreso con monto negativo"
+					},
+					"response": []
+				},
+				{
+					"name": "List Incomes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/incomes",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "incomes"]
+						},
+						"description": "Obtiene todos los ingresos"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Income",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 1200,\n    \"category\": \"Nuevo trabajo\",\n    \"description\": \"Nuevo salario\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/incomes/{{income_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "incomes", "{{income_id}}"]
+						},
+						"description": "Actualiza un ingreso existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Income",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/incomes/{{income_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "incomes", "{{income_id}}"]
+						},
+						"description": "Elimina un ingreso"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Expenses",
+			"item": [
+				{
+					"name": "Create Expense",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 100,\n    \"category\": \"Comida\",\n    \"description\": \"Supermercado\",\n    \"due_date\": \"2024-04-01\",\n    \"paid\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/expenses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "expenses"]
+						},
+						"description": "Crea un nuevo gasto"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Expense - Invalid Date",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 100,\n    \"category\": \"Comida\",\n    \"description\": \"Supermercado\",\n    \"due_date\": \"invalid-date\",\n    \"paid\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/expenses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "expenses"]
+						},
+						"description": "Intenta crear un gasto con fecha inválida"
+					},
+					"response": []
+				},
+				{
+					"name": "List Expenses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/expenses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "expenses"]
+						},
+						"description": "Obtiene todos los gastos"
+					},
+					"response": []
+				},
+				{
+					"name": "List Unpaid Expenses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/expenses/unpaid",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "expenses", "unpaid"]
+						},
+						"description": "Obtiene los gastos no pagados"
+					},
+					"response": []
+				},
+				{
+					"name": "List Expenses By Due Date",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/expenses/by-due-date",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "expenses", "by-due-date"]
+						},
+						"description": "Obtiene los gastos ordenados por fecha de vencimiento"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Expense",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 150,\n    \"category\": \"Restaurante\",\n    \"description\": \"Cena\",\n    \"paid\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/expenses/{{expense_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "expenses", "{{expense_id}}"]
+						},
+						"description": "Actualiza un gasto existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Expense as Paid",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/expenses/{{expense_id}}/paid",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "expenses", "{{expense_id}}", "paid"]
+						},
+						"description": "Marca un gasto como pagado"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Expense",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-caller-id",
+								"value": "test-user"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/expenses/{{expense_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "expenses", "{{expense_id}}"]
+						},
+						"description": "Elimina un gasto"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "category_id",
+			"value": "cat_123",
+			"type": "string"
+		},
+		{
+			"key": "income_id",
+			"value": "inc_123",
+			"type": "string"
+		},
+		{
+			"key": "expense_id",
+			"value": "exp_123",
+			"type": "string"
+		}
+	]
+} 

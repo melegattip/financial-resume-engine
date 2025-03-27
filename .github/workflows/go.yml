@@ -5,9 +5,9 @@ name: Go
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 jobs:
 
@@ -19,10 +19,51 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.20'
+        go-version: '1.21'
 
-    - name: Build
-      run: go build -v ./...
+    - name: Install golint
+      run: go install golang.org/x/lint/golint@latest
 
-    - name: Test
-      run: go test -v ./...
+    - name: Install nancy
+      run: go install github.com/sonatype-nexus-community/nancy@latest
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Check for vulnerabilities
+      run: go list -json -m all | nancy sleuth
+
+    - name: Check code formatting
+      run: |
+        if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then
+          echo "Code is not formatted. Please run 'gofmt -w .'"
+          gofmt -l .
+          exit 1
+        fi
+
+    - name: Run golint
+      run: golint ./...
+
+    - name: Run govet
+      run: go vet ./...
+
+    - name: Build API
+      run: |
+        echo "Building API..."
+        go build -v -o bin/api ./cmd/api
+        if [ ! -f "bin/api" ]; then
+          echo "Error: API binary was not created"
+          exit 1
+        fi
+        echo "API built successfully"
+
+    - name: Run tests with coverage
+      run: |
+        go test -v -coverprofile=coverage.out ./...
+        go tool cover -func=coverage.out
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage.out
