@@ -2,7 +2,6 @@
 .env
 
 # IDE
-.vscode/
 .idea/
 
 # OS
