@@ -17,7 +17,7 @@ func NewCategoryRepository(db *gorm.DB) *Category {
 }
 
 func (r *Category) Create(category *domain.Category) error {
-	
+
 	return r.db.Create(category).Error
 }
 
