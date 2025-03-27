@@ -1,13 +1,20 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/melegattip/financial-resume-engine/internal/handlers"
 )
 
 // SetupRouter configura todas las rutas de la aplicación
-func SetupRouter(incomeHandler *handlers.IncomeHandler, expenseHandler *handlers.ExpenseHandler) *gin.Engine {
+func SetupRouter(incomeHandler *handlers.IncomeHandler, expenseHandler *handlers.ExpenseHandler, categoryHandler *handlers.CategoryHandler) *gin.Engine {
 	router := gin.Default()
+
+	// Health check endpoint
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
 
 	// Middleware para obtener el user_id del contexto
 	router.Use(func(c *gin.Context) {
@@ -19,6 +26,15 @@ func SetupRouter(incomeHandler *handlers.IncomeHandler, expenseHandler *handlers
 	// Grupo de rutas para la API v1
 	v1 := router.Group("/api/v1")
 	{
+		// Rutas de categorías
+		categories := v1.Group("/categories")
+		{
+			categories.POST("", categoryHandler.CreateCategory)
+			categories.GET("", categoryHandler.GetCategories)
+			categories.PATCH("/:id", categoryHandler.UpdateCategory)
+			categories.DELETE("/:id", categoryHandler.DeleteCategory)
+		}
+
 		// Rutas de ingresos
 		incomes := v1.Group("/incomes")
 		{

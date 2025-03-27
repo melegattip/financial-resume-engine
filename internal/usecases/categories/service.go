@@ -1,8 +1,6 @@
 package categories
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/melegattip/financial-resume-engine/internal/core/domain"
 	baseRepo "github.com/melegattip/financial-resume-engine/internal/core/repository"
@@ -21,8 +19,6 @@ func (s *CreateCategory) Execute(category *domain.Category) (*domain.Category, e
 	categoryID := "cat_" + uuid.New().String()[:8]
 
 	// Establecer fecha de creación
-	category.CreatedAt = time.Now().UTC()
-	category.UpdatedAt = category.CreatedAt
 	category.ID = categoryID
 
 	// Crear la categoría en el repositorio
@@ -67,7 +63,6 @@ func NewUpdateCategory(repo baseRepo.CategoryRepository) *UpdateCategory {
 }
 
 func (s *UpdateCategory) Execute(category *domain.Category) error {
-	category.UpdatedAt = time.Now().UTC()
 	return s.CategoryRepository.Update(category)
 }
 

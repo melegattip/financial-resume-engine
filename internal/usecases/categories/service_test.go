@@ -2,7 +2,6 @@ package categories
 
 import (
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/melegattip/financial-resume-engine/internal/core/domain"
@@ -52,7 +51,6 @@ func TestCreateCategory(t *testing.T) {
 
 	category := domain.NewCategoryBuilder().
 		SetName("Test Category").
-		SetDescription("Test Description").
 		Build()
 
 	mockRepo.On("Create", mock.AnythingOfType("*domain.Category")).Return(nil)
@@ -60,8 +58,6 @@ func TestCreateCategory(t *testing.T) {
 	result, err := service.Execute(category)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, result.ID)
-	assert.True(t, result.CreatedAt.After(time.Now().Add(-time.Second)))
-	assert.True(t, result.UpdatedAt.After(time.Now().Add(-time.Second)))
 	mockRepo.AssertExpectations(t)
 }
 
@@ -72,7 +68,6 @@ func TestGetCategory(t *testing.T) {
 	expectedCategory := domain.NewCategoryBuilder().
 		SetID("cat_" + uuid.New().String()[:8]).
 		SetName("Test Category").
-		SetDescription("Test Description").
 		Build()
 
 	mockRepo.On("Get", "1").Return(expectedCategory, nil)
@@ -90,13 +85,11 @@ func TestListCategories(t *testing.T) {
 	category1 := domain.NewCategoryBuilder().
 		SetID("cat_" + uuid.New().String()[:8]).
 		SetName("Category 1").
-		SetDescription("Description 1").
 		Build()
 
 	category2 := domain.NewCategoryBuilder().
 		SetID("cat_" + uuid.New().String()[:8]).
 		SetName("Category 2").
-		SetDescription("Description 2").
 		Build()
 
 	expectedCategories := []*domain.Category{category1, category2}
@@ -116,7 +109,6 @@ func TestUpdateCategory(t *testing.T) {
 	category := domain.NewCategoryBuilder().
 		SetID("cat_" + uuid.New().String()[:8]).
 		SetName("Updated Category").
-		SetDescription("Updated Description").
 		Build()
 
 	mockRepo.On("Update", category).Return(nil)

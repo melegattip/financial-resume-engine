@@ -3,7 +3,6 @@ package domain
 
 import (
 	"errors"
-	"time"
 )
 
 var (
@@ -13,11 +12,9 @@ var (
 
 // Category represents a transaction category in the system
 type Category struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description,omitempty"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	UserID string `json:"user_id"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
 }
 
 // CategoryBuilder implements the builder pattern for creating Category instances
@@ -28,11 +25,14 @@ type CategoryBuilder struct {
 // NewCategoryBuilder creates a new CategoryBuilder instance with default timestamps
 func NewCategoryBuilder() *CategoryBuilder {
 	return &CategoryBuilder{
-		category: &Category{
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		},
+		category: &Category{},
 	}
+}
+
+// SetUserID sets the user ID and returns the builder
+func (b *CategoryBuilder) SetUserID(userID string) *CategoryBuilder {
+	b.category.UserID = userID
+	return b
 }
 
 // SetID sets the category ID and returns the builder
@@ -44,24 +44,6 @@ func (b *CategoryBuilder) SetID(id string) *CategoryBuilder {
 // SetName sets the category name and returns the builder
 func (b *CategoryBuilder) SetName(name string) *CategoryBuilder {
 	b.category.Name = name
-	return b
-}
-
-// SetDescription sets the category description and returns the builder
-func (b *CategoryBuilder) SetDescription(description string) *CategoryBuilder {
-	b.category.Description = description
-	return b
-}
-
-// SetCreatedAt sets the creation timestamp and returns the builder
-func (b *CategoryBuilder) SetCreatedAt(createdAt time.Time) *CategoryBuilder {
-	b.category.CreatedAt = createdAt
-	return b
-}
-
-// SetUpdatedAt sets the last update timestamp and returns the builder
-func (b *CategoryBuilder) SetUpdatedAt(updatedAt time.Time) *CategoryBuilder {
-	b.category.UpdatedAt = updatedAt
 	return b
 }
 

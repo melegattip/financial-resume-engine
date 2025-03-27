@@ -2,6 +2,62 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "start-all",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "start-colima",
+                "start-postgres"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "stop-all",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "stop-postgres",
+                "stop-colima"
+            ]
+        },
+        {
+            "label": "start-postgres",
+            "type": "shell",
+            "command": "docker-compose up -d postgres && sleep 5 && until docker-compose exec -T postgres pg_isready; do sleep 1; done",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "echo": true
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": ".",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": "database system is ready to accept connections"
+                }
+            }
+        },
+        {
+            "label": "stop-postgres",
+            "type": "shell",
+            "command": "docker-compose stop postgres",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": false,
+                "echo": true
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "start-colima",
             "type": "shell",
             "command": "colima status || colima start --cpu 2 --memory 4 --disk 100",
@@ -9,30 +65,6 @@
                 "reveal": "always",
                 "panel": "shared",
                 "clear": true,
-                "echo": true
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "stop-all-containers",
-            "type": "shell",
-            "command": "sleep 2 && docker ps -q | xargs -r docker stop && docker ps -aq | xargs -r docker rm",
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared",
-                "clear": false,
-                "echo": true
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "start-database",
-            "type": "shell",
-            "command": "docker-compose up -d postgres && sleep 10 && until docker-compose exec -T postgres pg_isready; do sleep 1; done",
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared",
-                "clear": false,
                 "echo": true
             },
             "problemMatcher": []
@@ -50,23 +82,16 @@
             "problemMatcher": []
         },
         {
-            "label": "Start PostgreSQL",
+            "label": "stop-all-containers",
             "type": "shell",
-            "command": "docker-compose up -d postgres",
-            "isBackground": true,
-            "problemMatcher": {
-                "pattern": {
-                    "regexp": ".",
-                    "file": 1,
-                    "location": 2,
-                    "message": 3
-                },
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": ".",
-                    "endsPattern": "database system is ready to accept connections"
-                }
-            }
+            "command": "sleep 2 && docker ps -q | xargs -r docker stop && docker ps -aq | xargs -r docker rm",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": false,
+                "echo": true
+            },
+            "problemMatcher": []
         }
     ]
 } 

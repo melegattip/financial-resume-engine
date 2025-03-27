@@ -1,32 +1,10 @@
 basePath: /api/v1
 definitions:
-  categories.CreateCategoryRequest:
-    properties:
-      description:
-        type: string
-      name:
-        type: string
-    required:
-    - name
-    type: object
-  categories.UpdateCategoryRequest:
-    properties:
-      description:
-        type: string
-      name:
-        type: string
-    type: object
   domain.Category:
     properties:
-      created_at:
-        type: string
-      description:
-        type: string
       id:
         type: string
       name:
-        type: string
-      updated_at:
         type: string
     type: object
   errors.BadRequest:
@@ -277,7 +255,10 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/categories.CreateCategoryRequest'
+          properties:
+            name:
+              type: string
+          type: object
       produces:
       - application/json
       responses:
@@ -352,7 +333,10 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/categories.UpdateCategoryRequest'
+          properties:
+            name:
+              type: string
+          type: object
       produces:
       - application/json
       responses:

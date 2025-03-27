@@ -1,4 +1,4 @@
-package categories
+package handlers
 
 import (
 	"net/http"
@@ -9,6 +9,7 @@ import (
 	"github.com/melegattip/financial-resume-engine/internal/core/logs"
 	"github.com/melegattip/financial-resume-engine/internal/infrastructure/logger"
 	"github.com/melegattip/financial-resume-engine/internal/infrastructure/repository"
+	"github.com/melegattip/financial-resume-engine/internal/usecases/categories"
 	"gorm.io/gorm"
 )
 
@@ -27,15 +28,15 @@ func NewCategoryHandler(db *gorm.DB) *CategoryHandler {
 // @Accept json
 // @Produce json
 // @Param x-caller-id header string true "ID del usuario"
-// @Param category body CreateCategoryRequest true "Datos de la categoría"
+// @Param category body object{name=string} true "Datos de la categoría"
 // @Success 201 {object} domain.Category
 // @Failure 400 {object} errors.BadRequest
 // @Failure 401 {object} errors.UnauthorizedRequest
 // @Router /api/v1/categories [post]
-func (h *CategoryHandler) HandleCreateCategory(c *gin.Context) {
+func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	var request struct {
-		Name        string `json:"name" binding:"required"`
-		Description string `json:"description,omitempty"`
+		ID   string `json:"id"`
+		Name string `json:"name" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -43,24 +44,17 @@ func (h *CategoryHandler) HandleCreateCategory(c *gin.Context) {
 		return
 	}
 
+	userID := c.GetHeader("x-caller-id")
+
 	// Crear el modelo de categoría
-	categoryModel := NewCategoryBuilder().
+	categoryModel := domain.NewCategoryBuilder().
+		SetUserID(userID).
 		SetName(request.Name).
-		SetDescription(request.Description).
 		Build()
 
-	// Convertir a domain.Category
-	domainCategory := &domain.Category{
-		ID:          categoryModel.ID,
-		Name:        categoryModel.Name,
-		Description: categoryModel.Description,
-		CreatedAt:   categoryModel.CreatedAt,
-		UpdatedAt:   categoryModel.UpdatedAt,
-	}
-
 	// Crear el servicio y ejecutar la operación
-	service := NewCreateCategory(repository.NewCategoryRepository(h.db))
-	category, err := service.Execute(domainCategory)
+	service := categories.NewCreateCategory(repository.NewCategoryRepository(h.db))
+	category, err := service.Execute(categoryModel)
 	if err != nil {
 		logger.Error(c.Request.Context(), err, logs.ErrorCreatingCategory.GetMessage(), logs.Tags{
 			"name": request.Name,
@@ -82,8 +76,8 @@ func (h *CategoryHandler) HandleCreateCategory(c *gin.Context) {
 // @Success 200 {array} domain.Category
 // @Failure 401 {object} errors.UnauthorizedRequest
 // @Router /api/v1/categories [get]
-func (h *CategoryHandler) HandleGetCategories(c *gin.Context) {
-	service := NewListCategories(repository.NewCategoryRepository(h.db))
+func (h *CategoryHandler) GetCategories(c *gin.Context) {
+	service := categories.NewListCategories(repository.NewCategoryRepository(h.db))
 	categories, err := service.Execute()
 	if err != nil {
 		logger.Error(c.Request.Context(), err, logs.ErrorListingCategories.GetMessage(), logs.Tags{})
@@ -102,18 +96,18 @@ func (h *CategoryHandler) HandleGetCategories(c *gin.Context) {
 // @Produce json
 // @Param x-caller-id header string true "ID del usuario"
 // @Param id path string true "ID de la categoría"
-// @Param category body UpdateCategoryRequest true "Datos de actualización"
+// @Param category body object{name=string} true "Datos de actualización"
 // @Success 200 {object} domain.Category
 // @Failure 400 {object} errors.BadRequest
 // @Failure 401 {object} errors.UnauthorizedRequest
 // @Failure 404 {object} errors.ResourceNotFound
 // @Router /api/v1/categories/{id} [patch]
-func (h *CategoryHandler) HandleUpdateCategory(c *gin.Context) {
+func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 	id := c.Param("id")
-	service := NewGetCategory(repository.NewCategoryRepository(h.db))
+	service := categories.NewGetCategory(repository.NewCategoryRepository(h.db))
 	category, err := service.Execute(id)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if err == errors.NewResourceNotFound(logs.ErrorListingCategories.GetMessage()) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
 			return
 		}
@@ -135,11 +129,8 @@ func (h *CategoryHandler) HandleUpdateCategory(c *gin.Context) {
 	if request.Name != nil {
 		category.Name = *request.Name
 	}
-	if request.Description != nil {
-		category.Description = *request.Description
-	}
 
-	updateService := NewUpdateCategory(repository.NewCategoryRepository(h.db))
+	updateService := categories.NewUpdateCategory(repository.NewCategoryRepository(h.db))
 	if err := updateService.Execute(category); err != nil {
 		logger.Error(c.Request.Context(), err, logs.ErrorUpdatingCategory.GetMessage(), logs.Tags{
 			"id":   id,
@@ -165,9 +156,9 @@ func (h *CategoryHandler) HandleUpdateCategory(c *gin.Context) {
 // @Failure 401 {object} errors.UnauthorizedRequest
 // @Failure 404 {object} errors.ResourceNotFound
 // @Router /api/v1/categories/{id} [delete]
-func (h *CategoryHandler) HandleDeleteCategory(c *gin.Context) {
+func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 	id := c.Param("id")
-	service := NewDeleteCategory(repository.NewCategoryRepository(h.db))
+	service := categories.NewDeleteCategory(repository.NewCategoryRepository(h.db))
 	if err := service.Execute(id); err != nil {
 		logger.Error(c.Request.Context(), err, logs.ErrorDeletingCategory.GetMessage(), logs.Tags{"id": id})
 		c.JSON(http.StatusInternalServerError, errors.NewInternalServerError(err.Error()))
