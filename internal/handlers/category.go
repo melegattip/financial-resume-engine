@@ -133,7 +133,7 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 	service := categories.NewGetCategory(repository.NewCategoryRepository(h.db))
 	category, err := service.Execute(categoryName)
 	if err != nil {
-		if err == errors.NewResourceNotFound(logs.ErrorListingCategories.GetMessage()) {
+		if errors.IsResourceNotFound(err) {
 			httputil.HandleError(c, errors.NewResourceNotFound("Category not found"))
 			return
 		}
@@ -198,19 +198,16 @@ func validateCallerID(c *gin.Context) (string, error) {
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		httputil.HandleError(c, errors.NewBadRequest(err.Error()))
-		return "", err
+		return "", errors.NewBadRequest(err.Error())
 	}
 
 	userID := c.GetHeader("x-caller-id")
 	if userID == "" {
-		httputil.HandleError(c, errors.NewUnauthorizedRequest("x-caller-id header is required"))
 		return "", errors.NewUnauthorizedRequest("x-caller-id header is required")
 	}
 
 	if request.UserID != userID {
-		httputil.HandleError(c, errors.NewUnauthorizedRequest("x-caller-id header is invalid"))
-		return "", errors.NewUnauthorizedRequest("x-caller-id header is invalid")
+		return "", errors.NewUnauthorizedRequest("user_id access denied")
 	}
 
 	return userID, nil
