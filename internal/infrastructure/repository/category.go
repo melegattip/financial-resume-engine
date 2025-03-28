@@ -1,8 +1,10 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/melegattip/financial-resume-engine/internal/core/domain"
-	"github.com/melegattip/financial-resume-engine/internal/core/errors"
+	coreErrors "github.com/melegattip/financial-resume-engine/internal/core/errors"
 	"gorm.io/gorm"
 )
 
@@ -17,16 +19,15 @@ func NewCategoryRepository(db *gorm.DB) *Category {
 }
 
 func (r *Category) Create(category *domain.Category) error {
-
 	return r.db.Create(category).Error
 }
 
-func (r *Category) Get(id string) (*domain.Category, error) {
+func (r *Category) Get(name string) (*domain.Category, error) {
 	var category domain.Category
-	result := r.db.First(&category, "id = ?", id)
+	result := r.db.First(&category, "name = ?", name)
 	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return nil, errors.NewResourceNotFound("Category not found")
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, coreErrors.NewResourceNotFound("Category not found")
 		}
 		return nil, result.Error
 	}
@@ -57,7 +58,7 @@ func (r *Category) Delete(id string) error {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return errors.NewResourceNotFound("Category not found")
+		return coreErrors.NewResourceNotFound("Category not found")
 	}
 	return nil
 }

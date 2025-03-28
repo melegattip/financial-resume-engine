@@ -7,6 +7,7 @@ import (
 	"github.com/melegattip/financial-resume-engine/internal/core/domain"
 	"github.com/melegattip/financial-resume-engine/internal/core/errors"
 	"github.com/melegattip/financial-resume-engine/internal/core/logs"
+	httputil "github.com/melegattip/financial-resume-engine/internal/infrastructure/http"
 	"github.com/melegattip/financial-resume-engine/internal/infrastructure/logger"
 	"github.com/melegattip/financial-resume-engine/internal/infrastructure/repository"
 	"github.com/melegattip/financial-resume-engine/internal/usecases/categories"
@@ -35,16 +36,15 @@ func NewCategoryHandler(db *gorm.DB) *CategoryHandler {
 // @Router /api/v1/categories [post]
 func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	var request struct {
-		ID   string `json:"id"`
-		Name string `json:"name" binding:"required"`
+		UserID string `json:"user_id" binding:"required"`
+		Name   string `json:"name" binding:"required"`
 	}
 
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, errors.NewBadRequest(err.Error()))
+	userID, err := validateCallerID(c)
+	if err != nil {
+		httputil.HandleError(c, err)
 		return
 	}
-
-	userID := c.GetHeader("x-caller-id")
 
 	// Crear el modelo de categoría
 	categoryModel := domain.NewCategoryBuilder().
@@ -59,7 +59,11 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		logger.Error(c.Request.Context(), err, logs.ErrorCreatingCategory.GetMessage(), logs.Tags{
 			"name": request.Name,
 		})
-		c.JSON(http.StatusInternalServerError, errors.NewInternalServerError(err.Error()))
+		if errors.IsResourceAlreadyExists(err) {
+			httputil.HandleError(c, errors.NewResourceAlreadyExists(err.Error()))
+			return
+		}
+		httputil.HandleError(c, errors.NewInternalServerError(err.Error()))
 		return
 	}
 
@@ -77,11 +81,22 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 // @Failure 401 {object} errors.UnauthorizedRequest
 // @Router /api/v1/categories [get]
 func (h *CategoryHandler) GetCategories(c *gin.Context) {
+	userID := c.GetHeader("x-caller-id")
+	if userID == "" {
+		httputil.HandleError(c, errors.NewUnauthorizedRequest("x-caller-id header is required"))
+		return
+	}
+
 	service := categories.NewListCategories(repository.NewCategoryRepository(h.db))
 	categories, err := service.Execute()
 	if err != nil {
+		if errors.IsResourceNotFound(err) {
+			httputil.HandleError(c, errors.NewResourceNotFound(err.Error()))
+			return
+		}
+
 		logger.Error(c.Request.Context(), err, logs.ErrorListingCategories.GetMessage(), logs.Tags{})
-		c.JSON(http.StatusInternalServerError, errors.NewInternalServerError(err.Error()))
+		httputil.HandleError(c, errors.NewInternalServerError(err.Error()))
 		return
 	}
 
@@ -103,26 +118,36 @@ func (h *CategoryHandler) GetCategories(c *gin.Context) {
 // @Failure 404 {object} errors.ResourceNotFound
 // @Router /api/v1/categories/{id} [patch]
 func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
-	id := c.Param("id")
-	service := categories.NewGetCategory(repository.NewCategoryRepository(h.db))
-	category, err := service.Execute(id)
+	_, err := validateCallerID(c)
 	if err != nil {
-		if err == errors.NewResourceNotFound(logs.ErrorListingCategories.GetMessage()) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
+		httputil.HandleError(c, err)
+		return
+	}
+
+	categoryName := c.GetHeader("x-category-name")
+	if categoryName == "" {
+		httputil.HandleError(c, errors.NewBadRequest("x-category-name header is required"))
+		return
+	}
+
+	service := categories.NewGetCategory(repository.NewCategoryRepository(h.db))
+	category, err := service.Execute(categoryName)
+	if err != nil {
+		if errors.IsResourceNotFound(err) {
+			httputil.HandleError(c, errors.NewResourceNotFound("Category not found"))
 			return
 		}
-		logger.Error(c.Request.Context(), err, logs.ErrorListingCategories.GetMessage(), logs.Tags{"id": id})
-		c.JSON(http.StatusInternalServerError, errors.NewInternalServerError(err.Error()))
+		logger.Error(c.Request.Context(), err, logs.ErrorListingCategories.GetMessage(), logs.Tags{"name": categoryName})
+		httputil.HandleError(c, errors.NewInternalServerError(err.Error()))
 		return
 	}
 
 	var request struct {
-		Name        *string `json:"name,omitempty"`
-		Description *string `json:"description,omitempty"`
+		Name *string `json:"name,omitempty"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, errors.NewBadRequest(err.Error()))
+		httputil.HandleError(c, errors.NewBadRequest(err.Error()))
 		return
 	}
 
@@ -133,10 +158,9 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 	updateService := categories.NewUpdateCategory(repository.NewCategoryRepository(h.db))
 	if err := updateService.Execute(category); err != nil {
 		logger.Error(c.Request.Context(), err, logs.ErrorUpdatingCategory.GetMessage(), logs.Tags{
-			"id":   id,
 			"name": request.Name,
 		})
-		c.JSON(http.StatusInternalServerError, errors.NewInternalServerError(err.Error()))
+		httputil.HandleError(c, errors.NewInternalServerError(err.Error()))
 		return
 	}
 
@@ -161,9 +185,30 @@ func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 	service := categories.NewDeleteCategory(repository.NewCategoryRepository(h.db))
 	if err := service.Execute(id); err != nil {
 		logger.Error(c.Request.Context(), err, logs.ErrorDeletingCategory.GetMessage(), logs.Tags{"id": id})
-		c.JSON(http.StatusInternalServerError, errors.NewInternalServerError(err.Error()))
+		httputil.HandleError(c, errors.NewInternalServerError(err.Error()))
 		return
 	}
 
 	c.JSON(http.StatusNoContent, nil)
+}
+
+func validateCallerID(c *gin.Context) (string, error) {
+	var request struct {
+		UserID string `json:"user_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		return "", errors.NewBadRequest(err.Error())
+	}
+
+	userID := c.GetHeader("x-caller-id")
+	if userID == "" {
+		return "", errors.NewUnauthorizedRequest("x-caller-id header is required")
+	}
+
+	if request.UserID != userID {
+		return "", errors.NewUnauthorizedRequest("user_id access denied")
+	}
+
+	return userID, nil
 }
